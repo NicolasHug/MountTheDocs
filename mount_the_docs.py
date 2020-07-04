@@ -14,15 +14,9 @@ def _import_obj(path):
     # Mostly heuristic-based and 100% dirty
 
     try:
-        spec = importlib.util.find_spec(path)
-        # could be None e.g. sklearn.tree.DecisionTreeClassifier
+        module = importlib.import_module(path)
+        return module
     except ModuleNotFoundError:
-        # happens for attributes of modules that are files e.g. sklearn.pipeline.make_pipeline
-        spec = None
-
-    if spec is not None:
-        return importlib.import_module(path)
-    else:
         # for stuff like 'sklearn.tree.DecisionTreeClassifier', try to do
         # from sklearn.tree import DecisionTreeClassifier
         parts = path.split(".")
@@ -31,7 +25,7 @@ def _import_obj(path):
         try:
             return getattr(importlib.import_module(base), end)
         except:
-            # Can't import, probably not a proper object anyway
+            # Return None if we can't import, probably not a proper object anyway
             return None
 
 
@@ -73,6 +67,9 @@ class APIDocReader(Operations):
     def readdir(self, path, fh):
         # return names of public attributes of a module
         # path should be that of a proper module unless something went wrong
+        # Unfortuntely this will no explicitly expose things like
+        # matplotlib.pyplot when they're not in __init__.py, but they're still
+        # accessible
         module = _import_obj(self._get_obj_path(path))
         public_attributes = getattr(
             module,
@@ -89,7 +86,7 @@ class APIDocReader(Operations):
 
 if __name__ == "__main__":
     usage = "usage: python mount_the_docs.py package_name [mount_point]"
-    if len(sys.argv) not in (2, 3) or '-help' in sys.argv[1]:
+    if len(sys.argv) not in (2, 3) or "-help" in sys.argv[1]:
         print(usage)
         exit(1)
 
