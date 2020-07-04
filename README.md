@@ -1,6 +1,8 @@
 # MountTheDocs
 Mount a Python package to browse its docs in the file system
 
+![Usage Illustration](https://github.com/NicolasHug/MountTheDocs/blob/master/illustration.gif)
+
 Usage:
 
 ```
